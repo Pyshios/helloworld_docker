@@ -1,12 +1,9 @@
-
-FROM python:3.8-slim-buster
-
+FROM golang:1.17 as build
 WORKDIR /app
-
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
-
 COPY . .
-EXPOSE 8888
+RUN CGO_ENABLED=0  go  build  -o server main.go 
 
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+FROM alpine:3.12
+WORKDIR /app
+COPY --from=build /app/server .
+CMD [ "./server" ]
