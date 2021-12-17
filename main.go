@@ -11,7 +11,7 @@ func main() {
 }
 
 func Server(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Unico APP %s", r.URL.Path[1:])
+	fmt.Fprintf(w, "Hello World %s", r.URL.Path[1:])
 
 	//fmt.Fprintln(nil)
 }
