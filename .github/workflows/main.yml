@@ -1,39 +1,50 @@
-name: Docker Image CI
+name: Build Front
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
-env:
-  GCP_PROJECT: winter-cocoa-335403 
-  GCR_IMAGE: app-cd-test
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: Build app-cd-test image
+      - name: Check Node v
+        run: node -v
+
+      - name: Build front
         run: |
-          docker build --file Dockerfile \
-          -t "gcr.io/$GCP_PROJECT/$GCR_IMAGE:$GITHUB_SHA" \
-          -t "gcr.io/$GCP_PROJECT/$GCR_IMAGE:${{ github.SHA }}" \
-          .
-      - name: Set up cloud sdk
-        uses: google-github-actions/setup-gcloud@master
+          npm install
+          npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          project_id: ${{ secrets.GCP_PROJECT }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          aws-access-key-id: \${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: \${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
 
-      - name: Login and publish image
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get image tag(verion)
+        id: image
         run: |
-          gcloud auth configure-docker -q
-          docker push --all-tags "gcr.io/$GCP_PROJECT/$GCR_IMAGE"
+          VERSION=\$(echo \${{ github.sha }} | cut -c1-8)
+          echo VERSION=\$VERSION
+          echo "::set-output name=version::\$VERSION"
 
-
-  
+      - name: Build, tag, and push image to Amazon ECR
+        id: image-info
+        env:
+          ECR_REGISTRY: \${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: demo-frontend
+          IMAGE_TAG: \${{ steps.image.outputs.version }}
+        run: |
+          echo "::set-output name=ecr_repository::\$ECR_REPOSITORY"
+          echo "::set-output name=image_tag::\$IMAGE_TAG"
+          docker build -t \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG .
+          docker push \$ECR_REGISTRY/\$ECR_REPOSITORY:\$IMAGE_TAG
