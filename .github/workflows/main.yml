@@ -21,4 +21,29 @@ jobs:
         run: |
           docker build --file Dockerfile \
           -t "gcr.io/$GCP_PROJECT/$GCR_IMAGE:$GITHUB_SHA" \
-          -t "gcr.io/$GCP_PROJECT/$GCR_IMAGE:${{
+          -t "gcr.io/$GCP_PROJECT/$GCR_IMAGE:${{ github.SHA }}" \
+          .
+      - name: Set up cloud sdk
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Login and publish image
+        run: |
+          gcloud auth configure-docker -q
+          docker push --all-tags "gcr.io/$GCP_PROJECT/$GCR_IMAGE"
+      - uses: actions/checkout@v2
+      - name: Update unico-app.yaml
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'helm/environments/dev/application/unico-app.yaml'
+          propertyPath: 'image.tag'
+          value: ${{ github.SHA }}
+          commitChange: true
+          updateFile: true
+          masterBranchName: main
+          branch: main
+          targetBranch: main
+          createPR: false
