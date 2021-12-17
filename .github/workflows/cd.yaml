@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-
+    - name: Deploy GKE
       uses: actions/docker-build-push-gcr-update-gke-deployment-action@v1.4
       with:
         service_account: ${{ secrets.GCP_SA_KEY }}
