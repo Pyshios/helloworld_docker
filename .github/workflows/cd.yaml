@@ -1,0 +1,25 @@
+name: Deploy CD to GKE
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      uses: actions/docker-build-push-gcr-update-gke-deployment-action@v1.4
+      with:
+        service_account: ${{ secrets.GCP_SA_KEY }}
+        zone: 'us-central1-c'
+        project_id: 'winter-cocoa-335403'
+        registry: 'gcr.io'
+        image_name: 'app-cd-test '
+        cluster: 'winter-cocoa-335403-gke'
+        namespace: 'default'
+        deployment: 'front-end-dep'
+        container: 'front-end'
