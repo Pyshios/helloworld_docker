@@ -22,5 +22,5 @@ jobs:
         cluster: 'winter-cocoa-335403-gke'
         namespace: 'default'
         deployment: 'front-end-dep'
-        container: 'front-end'
+        container: 'app-cd-test-sha256-1'
 
