@@ -18,7 +18,7 @@ jobs:
         zone: 'us-central1'
         project_id: 'winter-cocoa-335403'
         registry: 'gcr.io'
-        image_name: 'app-cd-test '
+        image_name: 'app-cd-test'
         cluster: 'winter-cocoa-335403-gke'
         namespace: 'default'
         deployment: 'front-end-dep'
