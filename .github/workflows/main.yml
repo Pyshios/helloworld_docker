@@ -34,16 +34,5 @@ jobs:
         run: |
           gcloud auth configure-docker -q
           docker push --all-tags "gcr.io/$GCP_PROJECT/$GCR_IMAGE"
-      - uses: actions/checkout@v2
-      - name: Update unico-app.yaml
-        uses: fjogeleit/yaml-update-action@master
-        with:
-          valueFile: 'helm/environments/dev/application/unico-app.yaml'
-          propertyPath: 'image.tag'
-          value: ${{ github.SHA }}
-          commitChange: true
-          updateFile: true
-          masterBranchName: main
-          branch: main
-          targetBranch: main
-          createPR: false
+
+  
